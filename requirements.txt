@@ -1,0 +1,15 @@
+huggingface-hub
+sentence-transformers
+
+Flask==2.0.1
+Werkzeug==2.2.2
+
+llama-index
+llama-index-llms-ollama
+llama-index-embeddings-huggingface
+
+wikipedia-api
+
+aiohttp
+beautifulsoup4 
+requests

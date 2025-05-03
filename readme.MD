@@ -1,0 +1,1 @@
+Run api: uv run fastapi dev --port 6000

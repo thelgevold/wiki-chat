@@ -1,0 +1,41 @@
+<div class="chat-message" [ngStyle]="{ 'margin-left.px': depth * 20 }">
+  <p [ngClass]="{
+      'user-message-text': msg.role === 'User',
+      'system-message-text': msg.role === 'System'
+    }">
+    <span class="chat-role">{{ msg.role }}:</span> {{ msg.answer }}
+  </p>
+
+  <div class="reply-container" *ngIf="msg.role == 'System'">
+    <a class="reply-link" (click)="toggleReply()">Reply</a>
+  </div>
+
+  <div *ngIf="replying" class="reply-input-container">
+    <input
+      [(ngModel)]="replyText"
+      placeholder="Type a reply..."
+      class="chat-input"
+    />
+    <button (click)="sendReply()" class="send-button">Send</button>
+    <div *ngIf="isLoading" class="loading-spinner"></div>
+  </div>
+
+  <!-- Images -->
+  <div class="image-row" *ngIf="msg.images?.length">
+    <div class="image-item" *ngFor="let image of msg.images">
+      <p class="image-caption">{{ image.description }}</p>
+      <img 
+        [src]="image.path" 
+        [alt]="image.description" 
+        class="chat-image"
+      />
+    </div>
+  </div>
+
+  <!-- Recursive replies -->
+  <app-chat-message
+    *ngFor="let child of msg.children"
+    [msg]="child"
+    [depth]="depth + 1"
+  ></app-chat-message>
+</div>

@@ -1,0 +1,16 @@
+<div class="chat-container">
+  <div class="chat-log">
+    <app-chat-message *ngFor="let msg of messages" [msg]="msg"></app-chat-message>
+  </div>
+
+  <div class="chat-input-area">
+    <input
+      [(ngModel)]="currentMessage"
+      (keydown.enter)="sendMessage()"
+      placeholder="Type a message..."
+      class="chat-input"
+    />
+    <button (click)="sendMessage()" class="send-button">Send</button>
+    <div *ngIf="isLoading" class="loading-spinner"></div>
+  </div>
+</div>
