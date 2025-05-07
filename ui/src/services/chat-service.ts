@@ -7,7 +7,7 @@ import { ChatResponse } from '../models/chat-response';
     providedIn: 'root',
 })
 export class ChatService {
-    private apiUrl = '/api/question';
+    private apiUrl = '/api/chat';
 
     constructor(private http: HttpClient) {}    
 
@@ -25,7 +25,7 @@ export class ChatService {
       walkUp(current: ChatResponse | undefined, answers: string[]) {
         if (!current) return;
         this.walkUp(current.parent, answers);  // Recursively go to the top
-        answers.push(current.answer);     // Then push the answer when we come back down
+        answers.push(`${current.role}:${current.content}`);     // Then push the answer when we come back down
       }
 
 }

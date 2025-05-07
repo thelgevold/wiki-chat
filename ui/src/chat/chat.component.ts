@@ -25,7 +25,7 @@ export class ChatComponent {
     this.isLoading = true;
 
     if (this.currentMessage.trim()) {
-      let msg = new ChatResponse("User", this.currentMessage.trim(), [], [], undefined);
+      let msg = new ChatResponse("User", this.currentMessage.trim(), [], undefined);
       this.messages.push(msg);
 
       let history = this.chatService.collectAnswersFromAncestors(msg);

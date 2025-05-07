@@ -1,12 +1,12 @@
 <div class="chat-message" [ngStyle]="{ 'margin-left.px': depth * 20 }">
   <p [ngClass]="{
       'user-message-text': msg.role === 'User',
-      'system-message-text': msg.role === 'System'
+      'system-message-text': msg.role === 'Assistant'
     }">
-    <span class="chat-role">{{ msg.role }}:</span> {{ msg.answer }}
+    <span class="chat-role">{{ msg.role }}:</span> {{ msg.content }}
   </p>
 
-  <div class="reply-container" *ngIf="msg.role == 'System'">
+  <div class="reply-container" *ngIf="msg.role == 'Assistant'">
     <a class="reply-link" (click)="toggleReply()">Reply</a>
   </div>
 
@@ -15,21 +15,10 @@
       [(ngModel)]="replyText"
       placeholder="Type a reply..."
       class="chat-input"
+      (keydown.enter)="sendReply()"
     />
     <button (click)="sendReply()" class="send-button">Send</button>
     <div *ngIf="isLoading" class="loading-spinner"></div>
-  </div>
-
-  <!-- Images -->
-  <div class="image-row" *ngIf="msg.images?.length">
-    <div class="image-item" *ngFor="let image of msg.images">
-      <p class="image-caption">{{ image.description }}</p>
-      <img 
-        [src]="image.path" 
-        [alt]="image.description" 
-        class="chat-image"
-      />
-    </div>
   </div>
 
   <!-- Recursive replies -->

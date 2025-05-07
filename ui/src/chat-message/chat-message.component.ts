@@ -33,7 +33,6 @@ export class ChatMessageComponent {
       'User', 
       this.replyText, 
       [], 
-      [],
       this.msg
     );
     this.msg.children = this.msg.children || [];
