@@ -7,6 +7,8 @@ requires-python = ">=3.12"
 dependencies = [
     "llama-index",
     "llama-index-llms-ollama",
+    "llama-index-embeddings-huggingface",
+    "llama-index-vector-stores-chroma",
     "fastapi[standard]",
     "wikipedia-api"
 ]

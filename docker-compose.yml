@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+ 
+  ollama-chat:
+    image: ollama/ollama:0.6.6
+    ports:
+      - 11446:11434
+    volumes:
+      - .:/code
+      - ./ollama/ollama:/root/.ollama
+    container_name: ollama-chat
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: "1"
+              capabilities: [gpu]
+    pull_policy: always
+    tty: true
+    restart: always
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_HOST=0.0.0.0
