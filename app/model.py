@@ -61,7 +61,10 @@ def get_ranked_results(question, query_results):
 
         print(f"THE RANKING Number is {ranking_num}") 
 
-        if int(ranking_num) >= 5:
+        if ranking_num >= 8:
+            return [doc]
+
+        if ranking_num >= 5:
             msgs.append(doc)
                 
     return f"\n".join(msgs)
@@ -71,7 +74,7 @@ def predict(ctx: ChatContext):
 
     category = categorize_query(question)
 
-    query_results = query_vector_db(question, category)
+    query_results = query_vector_db_by_category(question, category)
 
     documents = query_results["documents"][0]
     metadatas = query_results["metadatas"][0]
@@ -181,12 +184,12 @@ def rewrite_query(history: list[str], original_query):
 
     return rewritten["content"]
 
-def query_vector_db(query, category):
+def query_vector_db_by_category(query, category):
     em = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=embedding_model_name)
     chroma_client = chromadb.PersistentClient(path=chroma_db_path)
     collection = chroma_client.get_collection(index_collection_name, embedding_function=em)
 
-    results = collection.query(query_texts=query, where={"source": category})#n_results=similarity_top_k)
+    results = collection.query(query_texts=query, where={"source": category})
 
     return results
 
@@ -196,7 +199,21 @@ def query_vector_db_by_question(query):
     chroma_client = chromadb.PersistentClient(path=chroma_db_path)
     collection = chroma_client.get_collection(index_collection_name, embedding_function=em)
 
-    results = collection.query(query_texts=query, n_results=similarity_top_k)
+    results = collection.query(query_texts=query, n_results=similarity_top_k, include=["distances", "metadatas", "documents"])
 
-    return results
+    distances = results["distances"][0]
+    documents = results["documents"][0]
+    metadatas = results["metadatas"][0]
+
+    sorted_items = sorted(zip(distances, documents, metadatas), key=lambda x: x[0])
+
+    # Reconstruct the original return format
+    sorted_results = {
+        "documents": [[doc for _, doc, _ in sorted_items]],
+        "metadatas": [[meta for _, _, meta in sorted_items]],
+        "distances": [[dist for dist, _, _ in sorted_items]]
+    }
+
+    return sorted_results
+
 
