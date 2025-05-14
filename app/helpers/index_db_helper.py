@@ -62,8 +62,8 @@ class IndexDBHelper:
         #chunk_texts = ['\n\n'.join(chunk) for chunk in chunks][0]
         
         for section in sections:
-            if len(section["combined_text"]) > 0:
-                documents.append(section["combined_text"])
+            if len(section["text"]) > 0:
+                documents.append(section["text"])
                 metadatas.append({"source": section["title"]})
                 i = i + 1
                 ids.append(str(i))

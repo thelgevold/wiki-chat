@@ -21,7 +21,7 @@ index_collection_name = "storage-index-1"
 chroma_db_path = "./chroma_db"
 
 embedding_model_name = "all-MiniLM-L6-v2"#"BAAI/bge-small-en-v1.5"
-llm_model_name = "qwen3:4b"
+llm_model_name = "qwen3"
 similarity_top_k = 10 
 
 def init_llm(): 
@@ -85,8 +85,6 @@ def predict(ctx: ChatContext):
             prompt = documents[i]
             break
         
-    
-
     template = create_system_prompt(query_str=question, context_str=prompt)
 
     res = Settings.llm.predict(PromptTemplate(template))
@@ -109,14 +107,41 @@ def categorize_query(question):
     template = f"""
     You are an assistant capable of categorizing questions by matching a single question to a single category from the following list:
     Early life and career
+    Early life and career -> Education
+    Early life and career -> Family and personal life
+    Early life and career -> Religious views
     Legal career
-    Legislative career
-    Presidential campaigns
-    Presidency (2009–2017)
+    Legislative career -> Illinois Senate (1997–2004)
+    Legislative career -> 2004 U.S. Senate campaign in Illinois
+    Legislative career -> U.S. Senate (2005–2008)
+    Presidential campaigns -> 2008 presidential candidacy
+    Presidential campaigns -> 2012 presidential candidacy
+    Presidency (2009–2017) -> First 100 days
+    Presidency (2009–2017) -> Domestic policy
+    Presidency (2009–2017) -> Domestic policy -> Racial issues
+    Presidency (2009–2017) -> Domestic policy -> LGBT rights
+    Presidency (2009–2017) -> Domestic policy -> LGBT rights -> Same-sex marriage
+    Presidency (2009–2017) -> Domestic policy -> Economic policy
+    Presidency (2009–2017) -> Domestic policy -> Environmental policy
+    Presidency (2009–2017) -> Domestic policy -> Health care reform
+    Presidency (2009–2017) -> Foreign policy
+    Presidency (2009–2017) -> Foreign policy -> War in Iraq
+    Presidency (2009–2017) -> Foreign policy -> Afghanistan and Pakistan
+    Presidency (2009–2017) -> Foreign policy -> Afghanistan and Pakistan -> Death of Osama bin Laden
+    Presidency (2009–2017) -> Foreign policy -> Relations with Cuba
+    Presidency (2009–2017) -> Foreign policy -> Israel
+    Presidency (2009–2017) -> Foreign policy -> Libya
+    Presidency (2009–2017) -> Foreign policy -> Syrian civil war
+    Presidency (2009–2017) -> Foreign policy -> Iran nuclear talks
+    Presidency (2009–2017) -> Foreign policy -> Russia
     Post-presidency (2017–present)
     Cultural and political image
+    Cultural and political image -> Job approval
+    Cultural and political image -> Foreign perceptions
+    Cultural and political image -> Thanks, Obama
     Legacy and recognition
-    Bibliography
+    Legacy and recognition -> Presidential library
+    Legacy and recognition -> Awards and honors
 
     Question: {question}
     
@@ -135,15 +160,16 @@ def rewrite_query(history: list[str], original_query):
         return original_query
 
     template = (
-        "Conversation so far:.\n"
+        "Previous conversation:\n"
         "---------------------\n"
         f"{"\n".join(history)}\n"
         "---------------------\n"
         "Given the previous conversation, "
-        "Rewrite the last user question to be self-contained by incorporating necessary context from the conversation."
+        "Rewrite the Question to be self-contained by incorporating necessary context from the conversation."
         "Do not include any assumptions in the response, only a clean, more detailed question."
         "Ensure that the rewritten question does not ask for more information than the original question. "
-        "In this context you are Barrack Obama, so any reference to 'you' should be rewritten to address Barrack Obama."
+        "In this context you are Barrack Obama, so any reference to 'you' should be rewritten to address Barrack Obama. "
+        "Ensure that you only rely on information provided in the previous conversation."
         f"Question: {original_query}\n"
     )
 

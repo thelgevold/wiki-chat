@@ -1,15 +1,39 @@
+from typing import Dict, List
 import wikipediaapi
 
-def get_article(title):
-    # with open(f"{title}.txt", "r", encoding="utf-8") as f:
-    #     content = f.read()
-    #     return content
+def get_article(page_title: str, lang: str = 'en') -> List[Dict[str, str]]:
+    wiki = wikipediaapi.Wikipedia(language='en', user_agent="MyApp/1.0 (https://mywebsite.com; contact@myemail.com)")
+    page = wiki.page(page_title)
 
-    wiki_wiki = wikipediaapi.Wikipedia(language='en', user_agent="MyApp/1.0 (https://mywebsite.com; contact@myemail.com)")
+    if not page.exists():
+        raise ValueError(f"Page '{page_title}' not found.")
 
-    page = wiki_wiki.page(title)
+    results = []
 
-    return get_flat_sections(page)
+    def recurse_sections(sections, prefix=""):
+        for section in sections:
+            current_title = f"{prefix} -> {section.title}" if prefix else section.title
+            # Include this section regardless of whether it has children
+            results.append({
+                "title": current_title,
+                "text": section.text.strip()
+            })
+            # Recurse into children
+            recurse_sections(section.sections, current_title)
+
+    recurse_sections(page.sections)
+    return results
+
+# def get_article(title):
+#     # with open(f"{title}.txt", "r", encoding="utf-8") as f:
+#     #     content = f.read()
+#     #     return content
+
+#     wiki_wiki = wikipediaapi.Wikipedia(language='en', user_agent="MyApp/1.0 (https://mywebsite.com; contact@myemail.com)")
+
+#     page = wiki_wiki.page(title)
+
+#     return get_flat_sections(page)
 
     # if page.exists():
     #     with open(f"{title}.txt", "w", encoding="utf-8") as f:
@@ -18,17 +42,17 @@ def get_article(title):
     # else:
     #     raise ValueError(f"Article '{title}' does not exist.")
 
-def extract_flat_sections(section, level=0):
-    combined_text = f"{section.title}\n{section.text}\n"
-    for sub in section.sections:
-        combined_text += extract_flat_sections(sub, level + 1)["combined_text"]
+# def extract_flat_sections(section, level=0):
+#     combined_text = f"{section.title}\n{section.text}\n"
+#     for sub in section.sections:
+#         combined_text += extract_flat_sections(sub, level + 1)["combined_text"]
     
-    return {
-        "title": section.title,
-        "text": section.text,
-        "level": level,
-        "combined_text": combined_text.strip()
-    }
+#     return {
+#         "title": section.title,
+#         "text": section.text,
+#         "level": level,
+#         "combined_text": combined_text.strip()
+#     }
 
-def get_flat_sections(page):
-    return [extract_flat_sections(section) for section in page.sections]
+# def get_flat_sections(page):
+#     return [extract_flat_sections(section) for section in page.sections]
