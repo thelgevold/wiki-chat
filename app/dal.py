@@ -19,7 +19,6 @@ def get_metadata(key: str):
 
     return list(unique_sources)
 
-
 def query_vector_db_by_category(query, category):
     collection = _get_collection()
 

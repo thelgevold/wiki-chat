@@ -8,10 +8,6 @@ from app.article_service import get_article
 
 from app.dal import index_collection_name, chroma_db_path, embedding_model_name
 
-# index_collection_name = "storage-index-1"
-# chroma_db_path = "./chroma_db"
-# embedding_model_name = "all-MiniLM-L6-v2"#"BAAI/bge-small-en-v1.5" #"all-MiniLM-L6-v2"
-
 class IndexDBHelper:
     def _create_index(self, chroma_collection):
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection, collection_name=index_collection_name)

@@ -1,26 +1,14 @@
 from llama_index.llms.ollama import Ollama
 from llama_index.core import Settings
-#from llama_index.core.tools import FunctionTool
 from llama_index.core import PromptTemplate
-from llama_index.core.retrievers import VectorIndexRetriever
-from llama_index.core.query_engine import RetrieverQueryEngine
-from llama_index.core import (Settings, VectorStoreIndex, PromptTemplate, get_response_synthesizer)
+from llama_index.core import (Settings, PromptTemplate)
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core.llms import ChatMessage
 
-
-from app.prompts import create_system_prompt
+from app.prompts import create_system_prompt, create_ranked_result_prompt, create_categorize_query_prompt, create_rewrite_query_prompt
 from app.helpers.response_helper import extract_think_response
-from app.dal import query_vector_db_by_question, query_vector_db_by_category, get_metadata
+from app.dal import query_vector_db_by_question, query_vector_db_by_category, get_metadata, embedding_model_name
 
 from app.chat_context import ChatContext
-
-index_collection_name = "storage-index-1"
-chroma_db_path = "./chroma_db"
-
-embedding_model_name = "all-MiniLM-L6-v2"#"BAAI/bge-small-en-v1.5"
-llm_model_name = "qwen3"
-similarity_top_k = 10 
 
 def init_llm(): 
     Settings.embed_model = HuggingFaceEmbedding(model_name=embedding_model_name)
@@ -30,28 +18,9 @@ def get_ranked_results(question, query_results):
     msgs = []
 
     for doc in query_results["documents"][0]:
-        prompt = f"""Score how well the following paragraph answers the question.
-
-        Question: {question}
-
-        Paragraph: {doc}
-
-        Return only a score from 0 to 10. Do not include the reasoning for the score.
-
-        Only the options listed below are valid answers:
-        0
-        1
-        2
-        3
-        4
-        5
-        6
-        7
-        8
-        9
-        10
-        """
+        prompt = create_ranked_result_prompt(question, doc)
         p = PromptTemplate(prompt)
+        
         ranking = Settings.llm.predict(p)
         ranking_res = extract_think_response(ranking)
        
@@ -68,7 +37,7 @@ def get_ranked_results(question, query_results):
     return f"\n".join(msgs)
 
 def predict(ctx: ChatContext):
-    question = rewrite_query(ctx.history, ctx.question)
+    question = rewrite_query(ctx.history, ctx.question, ctx.wikiPageTitle)
 
     category = categorize_query(question)
 
@@ -103,21 +72,10 @@ def predict(ctx: ChatContext):
     else:
         return response
 
-
 def categorize_query(question):
     categories = get_metadata("source")
 
-    template = f"""
-    You are an assistant capable of categorizing questions by matching a single question to a single category from the following list:
-
-    Categories:
-    ---------------------
-    {"\n".join(categories)}
-    ---------------------
-    
-    Question: {question}
-    
-    Respond with just the selected category and nothing more. """
+    template = create_categorize_query_prompt(question, categories)
 
     res = Settings.llm.predict(PromptTemplate(template))
 
@@ -125,23 +83,11 @@ def categorize_query(question):
 
     return rewritten["content"]
 
-def rewrite_query(history: list[str], original_query):
+def rewrite_query(history: list[str], original_query, title):
     if len(history) < 2:
         return original_query
 
-    template = (
-        "Previous conversation:\n"
-        "---------------------\n"
-        f"{"\n".join(history)}\n"
-        "---------------------\n"
-        "Given the previous conversation, "
-        "Rewrite the Question to be self-contained by incorporating necessary context from the conversation."
-        "Do not include any assumptions in the response, only a clean, more detailed question."
-        "Ensure that the rewritten question does not ask for more information than the original question. "
-        "In this context you are Barrack Obama, so any reference to 'you' should be rewritten to address Barrack Obama. "
-        "Ensure that you only rely on information provided in the previous conversation."
-        f"Question: {original_query}\n"
-    )
+    template = create_rewrite_query_prompt(history, original_query, title)
 
     res = Settings.llm.predict(PromptTemplate(template))
 
