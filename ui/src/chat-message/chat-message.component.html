@@ -3,7 +3,7 @@
       'user-message-text': msg.role === 'User',
       'system-message-text': msg.role === 'Assistant'
     }">
-    <span class="chat-role">{{ msg.role }}:</span> {{ msg.content }}
+    {{ msg.content }}
   </p>
 
   <div class="reply-container" *ngIf="msg.role == 'Assistant'">

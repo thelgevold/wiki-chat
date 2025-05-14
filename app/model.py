@@ -11,7 +11,7 @@ from llama_index.core.llms import ChatMessage
 
 from app.prompts import create_system_prompt
 from app.helpers.response_helper import extract_think_response
-from app.dal import query_vector_db_by_question, query_vector_db_by_category
+from app.dal import query_vector_db_by_question, query_vector_db_by_category, get_metadata
 
 from app.chat_context import ChatContext
 
@@ -24,7 +24,7 @@ similarity_top_k = 10
 
 def init_llm(): 
     Settings.embed_model = HuggingFaceEmbedding(model_name=embedding_model_name)
-    Settings.llm = Ollama(model=llm_model_name, request_timeout=1000.0, base_url = "http://localhost:11446", temperature=0)#, context_window=12000)
+    Settings.llm = Ollama(model="qwen3", request_timeout=1000.0, base_url = "http://localhost:11446", temperature=0)#, context_window=12000)
 
 def get_ranked_results(question, query_results):
     msgs = []
@@ -105,45 +105,16 @@ def predict(ctx: ChatContext):
 
 
 def categorize_query(question):
+    categories = get_metadata("source")
+
     template = f"""
     You are an assistant capable of categorizing questions by matching a single question to a single category from the following list:
-    Early life and career
-    Early life and career -> Education
-    Early life and career -> Family and personal life
-    Early life and career -> Religious views
-    Legal career
-    Legislative career -> Illinois Senate (1997–2004)
-    Legislative career -> 2004 U.S. Senate campaign in Illinois
-    Legislative career -> U.S. Senate (2005–2008)
-    Presidential campaigns -> 2008 presidential candidacy
-    Presidential campaigns -> 2012 presidential candidacy
-    Presidency (2009–2017) -> First 100 days
-    Presidency (2009–2017) -> Domestic policy
-    Presidency (2009–2017) -> Domestic policy -> Racial issues
-    Presidency (2009–2017) -> Domestic policy -> LGBT rights
-    Presidency (2009–2017) -> Domestic policy -> LGBT rights -> Same-sex marriage
-    Presidency (2009–2017) -> Domestic policy -> Economic policy
-    Presidency (2009–2017) -> Domestic policy -> Environmental policy
-    Presidency (2009–2017) -> Domestic policy -> Health care reform
-    Presidency (2009–2017) -> Foreign policy
-    Presidency (2009–2017) -> Foreign policy -> War in Iraq
-    Presidency (2009–2017) -> Foreign policy -> Afghanistan and Pakistan
-    Presidency (2009–2017) -> Foreign policy -> Afghanistan and Pakistan -> Death of Osama bin Laden
-    Presidency (2009–2017) -> Foreign policy -> Relations with Cuba
-    Presidency (2009–2017) -> Foreign policy -> Israel
-    Presidency (2009–2017) -> Foreign policy -> Libya
-    Presidency (2009–2017) -> Foreign policy -> Syrian civil war
-    Presidency (2009–2017) -> Foreign policy -> Iran nuclear talks
-    Presidency (2009–2017) -> Foreign policy -> Russia
-    Post-presidency (2017–present)
-    Cultural and political image
-    Cultural and political image -> Job approval
-    Cultural and political image -> Foreign perceptions
-    Cultural and political image -> Thanks, Obama
-    Legacy and recognition
-    Legacy and recognition -> Presidential library
-    Legacy and recognition -> Awards and honors
 
+    Categories:
+    ---------------------
+    {"\n".join(categories)}
+    ---------------------
+    
     Question: {question}
     
     Respond with just the selected category and nothing more. """
@@ -151,8 +122,6 @@ def categorize_query(question):
     res = Settings.llm.predict(PromptTemplate(template))
 
     rewritten = extract_think_response(res)
-
-    print(f"Here is the category {rewritten["content"]}")
 
     return rewritten["content"]
 

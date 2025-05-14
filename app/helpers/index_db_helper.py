@@ -1,20 +1,16 @@
 import chromadb
 from chromadb.utils import embedding_functions
 from llama_index.vector_stores.chroma import ChromaVectorStore
-from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core import StorageContext
-from llama_index.core import (Settings, VectorStoreIndex, PromptTemplate, get_response_synthesizer)
-from llama_index.core.node_parser import TokenTextSplitter
-
-from app.book_service import get_book
+from llama_index.core import (Settings, VectorStoreIndex)
 
 from app.article_service import get_article
 
-from sentence_transformers import SentenceTransformer
+from app.dal import index_collection_name, chroma_db_path, embedding_model_name
 
-index_collection_name = "storage-index-1"
-chroma_db_path = "./chroma_db"
-embedding_model_name = "all-MiniLM-L6-v2"#"BAAI/bge-small-en-v1.5" #"all-MiniLM-L6-v2"
+# index_collection_name = "storage-index-1"
+# chroma_db_path = "./chroma_db"
+# embedding_model_name = "all-MiniLM-L6-v2"#"BAAI/bge-small-en-v1.5" #"all-MiniLM-L6-v2"
 
 class IndexDBHelper:
     def _create_index(self, chroma_collection):
@@ -44,22 +40,8 @@ class IndexDBHelper:
         documents = []
         metadatas = []
         ids = [] 
-
-       # token_text_splitter = TokenTextSplitter(chunk_size=5000, chunk_overlap=100)
-        
+ 
         i = 1
-        # for chapter in chapters:
-        #     sections = token_text_splitter.split_text(chapter["text"])
-        #     for section in sections:
-        #         documents.append(section)
-        #         metadatas.append({"source": chapter["title"]})
-        #         ids.append(str(i))
-        #         i = i + 1
-
-            #n pragraphs
-       # paragraphs = [p.strip() for p in wiki_text.split('\n\n') if p.strip()]
-        #chunks = [paragraphs[i:i+5] for i in range(0, len(paragraphs), 5)]
-        #chunk_texts = ['\n\n'.join(chunk) for chunk in chunks][0]
         
         for section in sections:
             if len(section["text"]) > 0:
@@ -69,14 +51,6 @@ class IndexDBHelper:
                 ids.append(str(i))
 
                 print(section["title"])
-
-            # Single paragraph
-            # for p in paragraphs:
-            #     if len(p) > 50:
-            #         documents.append(p)
-            #         metadatas.append({"source": chapter["title"]})
-            #         i = i + 1
-            #         ids.append(str(i))
         
         chroma_collection.add(
                                 documents=documents, 
