@@ -16,8 +16,7 @@ def extract_think_response(text):
     if match:
         context = match.group(1).strip()
         content = match.group(2).strip()
-        if content == "NOT FOUND":
-            content = "I am unable to respond to that. Please try to rephrase your question or add more context."
+       
         return {"context": context, "content": content, "role": "Assistant"}
     else:
         return {"context": None, "content": text.strip(), "role": "Assistant"}

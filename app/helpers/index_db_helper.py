@@ -5,8 +5,8 @@ from llama_index.core import StorageContext
 from llama_index.core import (Settings, VectorStoreIndex)
 
 from app.article_service import get_article
-
 from app.dal import index_collection_name, chroma_db_path, embedding_model_name
+from app.helpers.n_gram_helper import NGramHelper
 
 class IndexDBHelper:
     def _create_index(self, chroma_collection):
@@ -18,16 +18,20 @@ class IndexDBHelper:
         return index 
  
     def build_index_db(self):
-     
         chroma_client = chromadb.PersistentClient(path=chroma_db_path)
       
         if index_collection_name in [c for c in chroma_client.list_collections()]:
             print("Using existing INDEX")
             chroma_collection = chroma_client.get_collection(name=index_collection_name) 
-            return self._create_index(chroma_collection)
-            #chroma_client.delete_collection(name=index_collection_name)
+            #return self._create_index(chroma_collection)
+            chroma_client.delete_collection(name=index_collection_name)
 
         sections = get_article("Barack Obama")
+
+        text_chunks = [s["text"] for s in sections]
+        ngram_helper = NGramHelper()
+        ngram_helper.initialize_vectorizer(text_chunks)
+        
 
         em = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=embedding_model_name)
         
@@ -43,11 +47,12 @@ class IndexDBHelper:
             if len(section["text"]) > 0:
                 documents.append(section["text"])
                 metadatas.append({"source": section["title"]})
-                i = i + 1
+                
+                ngram_helper.add_to_inverted_index(section["text"], i)
                 ids.append(str(i))
 
-                print(section["title"])
-        
+                i = i + 1
+
         chroma_collection.add(
                                 documents=documents, 
                                 metadatas=metadatas, 

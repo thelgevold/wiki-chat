@@ -10,5 +10,6 @@ dependencies = [
     "llama-index-embeddings-huggingface",
     "llama-index-vector-stores-chroma",
     "fastapi[standard]",
-    "wikipedia-api"
+    "wikipedia-api",
+    "scikit-learn"
 ]

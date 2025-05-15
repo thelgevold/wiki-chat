@@ -1,6 +1,8 @@
 from chromadb.utils import embedding_functions
 import chromadb
 
+from app.helpers.n_gram_helper import NGramHelper
+
 chroma_db_path = "./chroma_db"
 similarity_top_k = 10
 index_collection_name = "storage-index-1"
@@ -11,12 +13,23 @@ def _get_collection():
     chroma_client = chromadb.PersistentClient(path=chroma_db_path)
     return chroma_client.get_collection(index_collection_name, embedding_function=em)
 
+def query_by_ngram(query: str):
+    ngGramHeper = NGramHelper()
+
+    ranked = ngGramHeper.match_query_ngrams(query=query)
+
+    top_matches = [idx for idx, score in ranked if score >= 1]
+    if len(top_matches) > 0:
+        collection = _get_collection()
+        return collection.get(ids=str(top_matches[0]))
+        
+
 def get_metadata(key: str):
     collection = _get_collection()
     results = collection.get(include=["metadatas"])
 
     unique_sources = sorted({md[key] for md in results["metadatas"] if key in md})
-
+    
     return list(unique_sources)
 
 def query_vector_db_by_category(query, category):

@@ -6,7 +6,7 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 from app.prompts import create_system_prompt, create_ranked_result_prompt, create_categorize_query_prompt, create_rewrite_query_prompt
 from app.helpers.response_helper import extract_think_response
-from app.dal import query_vector_db_by_question, query_vector_db_by_category, get_metadata, embedding_model_name
+from app.dal import query_vector_db_by_question, query_vector_db_by_category, get_metadata, embedding_model_name, query_by_ngram
 
 from app.chat_context import ChatContext
 
@@ -28,9 +28,6 @@ def get_ranked_results(question, query_results):
 
         print(f"THE RANKING Number is {ranking_num}") 
 
-        if ranking_num >= 8:
-            return [doc]
-
         if ranking_num >= 5:
             msgs.append(doc)
                 
@@ -46,31 +43,36 @@ def predict(ctx: ChatContext):
     documents = query_results["documents"][0]
     metadatas = query_results["metadatas"][0]
 
-    prompt = None
+    context = None
 
     for i, metadata in enumerate(metadatas):
-        print(f"Comparing {metadata.get("source")} to {category}")
         if metadata and metadata.get("source") == category:
             print("Found matching document:")
-            prompt = documents[i]
+            context = documents[i]
             break
         
-    template = create_system_prompt(query_str=question, context_str=prompt)
-
-    res = Settings.llm.predict(PromptTemplate(template))
-
-    response = extract_think_response(res)
+    response = llm_predict(question, context)
 
     if response["content"] == "NOT FOUND":
+        print("Not a good match by category, asking the llm to rank the search documents.")
         query_results = query_vector_db_by_question(question)
-        prompt = get_ranked_results(question, query_results)
-        template = create_system_prompt(query_str=question, context_str=prompt)
-        res = Settings.llm.predict(PromptTemplate(template))
+        context = get_ranked_results(question, query_results)
+        response = llm_predict(question, context)
+        
+        if response["content"] == "NOT FOUND":
+            print("No good search result from vector search. Falling back to ngram search.")
+            context = query_by_ngram(question)
+            response = llm_predict(question, context)
 
-        return extract_think_response(res)
+            if response["content"] == "NOT FOUND":
+                response["content"] = "I am unable to respond to that. Please try to rephrase your question or add more context."
     
-    else:
-        return response
+    return response
+
+def llm_predict(question: str, context: str):
+    template = create_system_prompt(query_str=question, context_str=context)
+    res = Settings.llm.predict(PromptTemplate(template))
+    return extract_think_response(res)
 
 def categorize_query(question):
     categories = get_metadata("source")

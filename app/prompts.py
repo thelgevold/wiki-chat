@@ -9,6 +9,7 @@ def create_rewrite_query_prompt(history, original_query, title):
         "Do not include any assumptions in the response, only a clean, more detailed question."
         "Ensure that the rewritten question does not ask for more information than the original question. "
         f"In this context you are {title}, so any reference to 'you' should be rewritten to address {title}. "
+        "If you know the names of people mentioned in the previous conversation, use their names rather than neutral form like 'the person'. "
         "Ensure that you only rely on information provided in the previous conversation."
         f"Question: {original_query}\n"
     )
@@ -64,7 +65,7 @@ def create_system_prompt(context_str, query_str):
         "Answer the question exactly as asked. Do not provide any information beyond what is asked in the question. "
         "Rely only on the provided context information. "
         "Write the answer in first person as the person described in the context.\n"
-        "If you can't find an answer in the context, respond with the text: 'NOT FOUND'"
+        "If you can't find answers to all questions based on the context, respond with the text: 'NOT FOUND'"
         f"Query: {query_str}\n"
     )
 
