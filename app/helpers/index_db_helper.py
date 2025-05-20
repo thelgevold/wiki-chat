@@ -21,12 +21,11 @@ class IndexDBHelper:
         chroma_client = chromadb.PersistentClient(path=chroma_db_path)
       
         if index_collection_name in [c for c in chroma_client.list_collections()]:
-            print("Using existing INDEX")
             chroma_collection = chroma_client.get_collection(name=index_collection_name) 
             #return self._create_index(chroma_collection)
             chroma_client.delete_collection(name=index_collection_name)
 
-        sections = get_article("Barack Obama")
+        sections = get_article("Luke Skywalker")
 
         text_chunks = [s["text"] for s in sections]
         ngram_helper = NGramHelper()

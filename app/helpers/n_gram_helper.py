@@ -1,5 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer
 from collections import defaultdict
+import json
 
 class NGramHelper:
     def __new__(cls, *args, **kwargs):
@@ -16,21 +17,22 @@ class NGramHelper:
 
     def add_to_inverted_index(self, chunk: str, idx: int):
         tokens = self.vectorizer.build_analyzer()(chunk)
-        for n in range(1, 4):
-            for i in range(len(tokens) - n + 1):
-                ngram = ' '.join(tokens[i:i+n])
-                self.inverted_index[ngram].add(idx)
+       
+        for token in tokens:
+            self.inverted_index[token].add(idx)
             
     def match_query_ngrams(self, query: str):    
         query_tokens = self.vectorizer.build_analyzer()(query)
-
+        print(f"Query n-grams: {query_tokens}")
         matched_chunks = defaultdict(int)
 
-        for n in range(1, 4):
-            for i in range(len(query_tokens) - n + 1):
-                ngram = ' '.join(query_tokens[i:i+n])
-                for idx in self.inverted_index.get(ngram, []):
-                    matched_chunks[idx] += 1
+        for ngram in query_tokens:
+            for idx in self.inverted_index.get(ngram, []):
+                matched_chunks[idx] += 1
 
-        # Rank by frequency of matched n-grams
+        serializable_index = {k: list(v) for k, v in self.inverted_index.items()}
+
+        with open("inverted_index.json", "w") as f:
+            json.dump(serializable_index, f, indent=2)
+
         return sorted(matched_chunks.items(), key=lambda x: -x[1])

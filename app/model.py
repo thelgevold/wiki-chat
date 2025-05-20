@@ -9,14 +9,14 @@ from app.helpers.response_helper import extract_think_response
 from app.dal import query_vector_db_by_question, query_vector_db_by_category, get_metadata, embedding_model_name, query_by_ngram
 
 from app.chat_context import ChatContext
-
+ 
 def init_llm(): 
     Settings.embed_model = HuggingFaceEmbedding(model_name=embedding_model_name)
-    Settings.llm = Ollama(model="qwen3", request_timeout=1000.0, base_url = "http://localhost:11446", temperature=0)#, context_window=12000)
+    Settings.llm = Ollama(model="qwen3:8b", request_timeout=1000.0, base_url = "http://localhost:11446", temperature=0, context_window=6000)
 
 def get_ranked_results(question, query_results):
     msgs = []
-
+  
     for doc in query_results["documents"][0]:
         prompt = create_ranked_result_prompt(question, doc)
         p = PromptTemplate(prompt)
@@ -72,6 +72,9 @@ def predict(ctx: ChatContext):
 def llm_predict(question: str, context: str):
     template = create_system_prompt(query_str=question, context_str=context)
     res = Settings.llm.predict(PromptTemplate(template))
+
+    print(res)
+
     return extract_think_response(res)
 
 def categorize_query(question):

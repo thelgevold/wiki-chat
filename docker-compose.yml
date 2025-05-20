@@ -2,7 +2,7 @@ version: '3.8'
 services:
  
   ollama-chat:
-    image: ollama/ollama:0.6.6
+    image: ollama/ollama:0.7.0
     ports:
       - 11446:11434
     volumes:

@@ -8,13 +8,13 @@ def create_rewrite_query_prompt(history, original_query, title):
         "Rewrite the Question to be self-contained by incorporating necessary context from the conversation."
         "Do not include any assumptions in the response, only a clean, more detailed question."
         "Ensure that the rewritten question does not ask for more information than the original question. "
-        f"In this context you are {title}, so any reference to 'you' should be rewritten to address {title}. "
-        "If you know the names of people mentioned in the previous conversation, use their names rather than neutral form like 'the person'. "
-        "Ensure that you only rely on information provided in the previous conversation."
+        f"In this context you are {title}, so any reference to 'you' must be rewritten to address {title} instead of 'you'. "
+        "If you know the names of people mentioned in the previous conversation, use their names rather than forms like 'the person' or 'you'. "
+        "Ensure that you only rely on information provided in the previous conversation. "
         f"Question: {original_query}\n"
     )
 
-    return template
+    return template 
 
 def create_categorize_query_prompt(question, categories):
     template = f"""

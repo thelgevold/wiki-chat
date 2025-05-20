@@ -21,7 +21,8 @@ def query_by_ngram(query: str):
     top_matches = [idx for idx, score in ranked if score >= 1]
     if len(top_matches) > 0:
         collection = _get_collection()
-        return collection.get(ids=str(top_matches[0]))
+        ids = [str(i) for i in top_matches[:3]]
+        return collection.get(ids=ids)
         
 
 def get_metadata(key: str):
