@@ -28,11 +28,9 @@ class NGramHelper:
 
         for ngram in query_tokens:
             for idx in self.inverted_index.get(ngram, []):
+                print(f"{ngram} matched to section {idx}")
                 matched_chunks[idx] += 1
 
-        serializable_index = {k: list(v) for k, v in self.inverted_index.items()}
-
-        with open("inverted_index.json", "w") as f:
-            json.dump(serializable_index, f, indent=2)
+        print(f"matched chunks: {matched_chunks}")       
 
         return sorted(matched_chunks.items(), key=lambda x: -x[1])
